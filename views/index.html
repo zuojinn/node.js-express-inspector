@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="libs/viewer-jquery/css/viewer.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1><a href="/">我的音乐</a><small>首页</small></h1>
+        </div>
+        <a class="btn btn-success" href="/add">添加歌曲</a>
+        <div class="pull-right">
+            <audio id="audio" src="uploads/upload_4dfa17ad7ffbc127f2596f8e1bc7e71e.mp3" controls="true"></audio>
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>编号</th>
+                    <th>标题</th>
+                    <th>歌手</th>
+                    <th>海报</th>
+                    <th>播放</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="tbody">
+                
+            </tbody>
+        </table>
+    </div>
+    <script type="text/template" id="tpl">
+        {{each list as value index}}
+        <tr>
+            <td>{{index + 1}}</td>
+            <td>{{value.title}}</td>
+            <td>{{value.singer}}</td>
+            <td><img src="uploads/{{value.img[0].name}}" onclick="init_zoom({{value.img}})" style="width:60px;max-width:60px;height:60px;"/></td>
+            <td>
+                <span data-music="{{value.music.name}}" class="glyphicon glyphicon-play" onclick="music.play(this)"></span>
+            </td>
+            <td>
+                <a href="/edit?id={{value.id}}">编辑</a>
+                <a data-id="{{value.id}}" class="remove" href="#" onclick="music.del(this)">删除<a>
+            </td>
+        </tr>
+        {{/each}}
+    </script>
+
+    <script src="node_modules/jquery/dist/jquery.js"></script>
+    <script src="node_modules/art-template/lib/template-web.js"></script>
+    <script src="libs/viewer-jquery/js/viewer.min.js"></script>
+    <script>
+        $(function() {
+            loadData();
+        })
+
+        function loadData(){
+            $.ajax({
+                url: '/musicList',
+                type: 'get',
+                dataType: 'json',
+                success: function(data){
+                    $('#tbody').html(template('tpl', data))
+                    if(data && data.list !=0){
+                        $('#audio').show();
+                        $('#audio').attr('src', 'uploads/' + data.list[0].music.name).attr('autoplay', true);
+                    }else{
+                        $('#audio').hide();
+                    }
+                }
+            })
+        }
+
+        var music = {
+            'play' : function(obj){
+                var $obj = $(obj);
+                $('#audio').attr('src', 'uploads/' + $obj.data('music')).attr('autoplay', true);
+            },
+            'del' : function(obj){
+                var $obj = $(obj),$id = $obj.data('id');
+                $.ajax({
+                    url: '/remove',
+                    type: 'get',
+                    data: {
+                        id: $id
+                    },
+                    dataType: 'json',
+                    success:function(data){
+                        if(data.code === 1000){
+                            loadData();
+                        }else if(data.code === 1001){
+                            window.alert('删除失败')
+                        }
+                    }
+                })
+            }
+        }
+
+        //图片查看
+        function init_zoom(arr, index){
+            var html='';
+            $("body").find(".viewer-container").remove();
+            $("body").find("#dowebok").remove();
+            html='<ul id="dowebok" style="display:none">';
+            if(typeof arr === 'string'){
+                html+='<li><img data-original="uploads/'+arr+'" src="uploads/'+arr+'" alt="图片1"></li>';
+            }else{
+                for(var i=0;i<arr.length;i++){
+                    html+='<li><img data-original="uploads/'+arr[i].name+'" src="uploads/'+arr[i].name+'" alt="图片'+(i+1)+'"></li>';
+                } 
+            }
+            
+            html+='</ul>';
+            if (!index || index=='') index = 0;
+            $('body').append(html);
+            var viewer = new Viewer(document.getElementById('dowebok'), {url: 'data-original', 
+                    shown: function () {
+                        viewer.view(index);
+                    }
+                });
+            viewer.show();
+            return viewer;
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+/*文件上传*/
+.file {
+    position: relative;
+    display: inline-block;
+    text-decoration: none;
+    text-indent: 0;
+    line-height: 20px;
+    overflow: hidden;
+}
+.file input {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width:100%;
+    height:100%;
+    font-size: 100px;
+    opacity: 0;
+}
+
+input[type='checkbox'],input[type='radio'] {
+  -ms-transform: scale(1.3); /* IE */
+  -moz-transform: scale(1.3); /* FireFox */
+  -webkit-transform: scale(1.3); /* Safari and Chrome */
+  -o-transform: scale(1.3); /* Opera */
+}
